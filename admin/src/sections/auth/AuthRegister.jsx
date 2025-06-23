@@ -65,13 +65,17 @@ export default function AuthRegister() {
           submit: null
         }}
         validationSchema={Yup.object().shape({
-          firstname: Yup.string().max(255).required('First Name is required'),
-          lastname: Yup.string().max(255).required('Last Name is required'),
-          email: Yup.string().email('Must be a valid email').max(255).required('Email is required'),
+          firstname: Yup.string().max(255).required('Vui lòng nhập tên của bạn'),
+          lastname: Yup.string().max(255).required('Vui lòng nhập họ của bạn'),
+          email: Yup.string().email('Email không hợp lệ!').max(255).required('Địa chỉ email là bắt buộc'),
           password: Yup.string()
-            .required('Password is required')
-            .test('no-leading-trailing-whitespace', 'Password cannot start or end with spaces', (value) => value === value.trim())
-            .max(10, 'Password must be less than 10 characters')
+            .required('Vui lòng nhập mật khẩu')
+            .test(
+              'Mật khẩu không được có khoảng trắng đầu cuối',
+              'Mật khẩu không thể bắt đầu hoặc kết thúc bằng khoảng trắng',
+              (value) => value === value.trim()
+            )
+            .max(10, 'Mật khẩu không được quá 10 ký tự!')
         })}
       >
         {({ errors, handleBlur, handleChange, touched, values }) => (
@@ -79,7 +83,7 @@ export default function AuthRegister() {
             <Grid container spacing={3}>
               <Grid size={{ xs: 12, md: 6 }}>
                 <Stack sx={{ gap: 1 }}>
-                  <InputLabel htmlFor="firstname-signup">First Name*</InputLabel>
+                  <InputLabel htmlFor="firstname-signup">Tên*</InputLabel>
                   <OutlinedInput
                     id="firstname-login"
                     type="firstname"
@@ -87,7 +91,7 @@ export default function AuthRegister() {
                     name="firstname"
                     onBlur={handleBlur}
                     onChange={handleChange}
-                    placeholder="John"
+                    placeholder="Tên của bạn"
                     fullWidth
                     error={Boolean(touched.firstname && errors.firstname)}
                   />
@@ -100,7 +104,7 @@ export default function AuthRegister() {
               </Grid>
               <Grid size={{ xs: 12, md: 6 }}>
                 <Stack sx={{ gap: 1 }}>
-                  <InputLabel htmlFor="lastname-signup">Last Name*</InputLabel>
+                  <InputLabel htmlFor="lastname-signup">Họ*</InputLabel>
                   <OutlinedInput
                     fullWidth
                     error={Boolean(touched.lastname && errors.lastname)}
@@ -110,7 +114,7 @@ export default function AuthRegister() {
                     name="lastname"
                     onBlur={handleBlur}
                     onChange={handleChange}
-                    placeholder="Doe"
+                    placeholder="Họ của bạn"
                     inputProps={{}}
                   />
                 </Stack>
@@ -122,7 +126,7 @@ export default function AuthRegister() {
               </Grid>
               <Grid size={12}>
                 <Stack sx={{ gap: 1 }}>
-                  <InputLabel htmlFor="company-signup">Company</InputLabel>
+                  <InputLabel htmlFor="company-signup">Phòng ban</InputLabel>
                   <OutlinedInput
                     fullWidth
                     error={Boolean(touched.company && errors.company)}
@@ -131,7 +135,7 @@ export default function AuthRegister() {
                     name="company"
                     onBlur={handleBlur}
                     onChange={handleChange}
-                    placeholder="Demo Inc."
+                    placeholder="Phòng ban của bạn"
                     inputProps={{}}
                   />
                 </Stack>
@@ -143,7 +147,7 @@ export default function AuthRegister() {
               </Grid>
               <Grid size={12}>
                 <Stack sx={{ gap: 1 }}>
-                  <InputLabel htmlFor="email-signup">Email Address*</InputLabel>
+                  <InputLabel htmlFor="email-signup">Địa chỉ Email*</InputLabel>
                   <OutlinedInput
                     fullWidth
                     error={Boolean(touched.email && errors.email)}
@@ -153,7 +157,7 @@ export default function AuthRegister() {
                     name="email"
                     onBlur={handleBlur}
                     onChange={handleChange}
-                    placeholder="demo@company.com"
+                    placeholder="email@igroup.vn"
                     inputProps={{}}
                   />
                 </Stack>
@@ -165,7 +169,7 @@ export default function AuthRegister() {
               </Grid>
               <Grid size={12}>
                 <Stack sx={{ gap: 1 }}>
-                  <InputLabel htmlFor="password-signup">Password</InputLabel>
+                  <InputLabel htmlFor="password-signup">Mật khẩu</InputLabel>
                   <OutlinedInput
                     fullWidth
                     error={Boolean(touched.password && errors.password)}
@@ -215,13 +219,13 @@ export default function AuthRegister() {
               </Grid>
               <Grid size={12}>
                 <Typography variant="body2">
-                  By Signing up, you agree to our &nbsp;
+                  Bằng cách đăng ký, bạn đồng ý với các &nbsp;
                   <Link variant="subtitle2" component={RouterLink} to="#">
-                    Terms of Service
+                    Điều khoản Dịch vụ
                   </Link>
-                  &nbsp; and &nbsp;
+                  &nbsp; và &nbsp;
                   <Link variant="subtitle2" component={RouterLink} to="#">
-                    Privacy Policy
+                    Chính sách Quyền riêng tư
                   </Link>
                 </Typography>
               </Grid>
@@ -233,7 +237,7 @@ export default function AuthRegister() {
               <Grid size={12}>
                 <AnimateButton>
                   <Button fullWidth size="large" variant="contained" color="primary">
-                    Create Account
+                    Tạo tài khoản
                   </Button>
                 </AnimateButton>
               </Grid>
