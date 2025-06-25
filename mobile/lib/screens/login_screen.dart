@@ -24,6 +24,17 @@ class LoginScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  const SizedBox(height: 32),
+                  const Text(
+                    'Đăng nhập',
+                    style: TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blue,
+                      letterSpacing: 1.1,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
                   const SizedBox(height: 60),
                   // Email
                   TextField(
@@ -89,6 +100,20 @@ class LoginScreen extends StatelessWidget {
                   //   ),
                   // ),
                 ],
+              ),
+            ),
+          ),
+          Align(
+            alignment: Alignment.bottomRight,
+            child: Padding(
+              padding: const EdgeInsets.only(right: 12, bottom: 8),
+              child: Text(
+                '© Khối CNTT & Chuyển đổi số',
+                style: TextStyle(
+                  color: Colors.black45,
+                  fontSize: 12,
+                  fontStyle: FontStyle.italic,
+                ),
               ),
             ),
           ),

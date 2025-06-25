@@ -89,6 +89,20 @@ class _SplashScreenState extends State<SplashScreen> {
               ],
             ),
           ),
+          Align(
+            alignment: Alignment.bottomRight,
+            child: Padding(
+              padding: const EdgeInsets.only(right: 12, bottom: 8),
+              child: Text(
+                '© Khối CNTT & Chuyển đổi số',
+                style: TextStyle(
+                  color: Colors.black45,
+                  fontSize: 12,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );
