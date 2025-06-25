@@ -2,10 +2,10 @@ const mysql = require('mysql2');
 
 // Tạo kết nối
 const connection = mysql.createConnection({
-  host: 'localhost',      // Đổi thành host của bạn nếu khác
-  user: 'root',           // Đổi thành user của bạn
-  password: '', // Đổi thành password của bạn
-  database: ''  // Đổi thành tên database của bạn
+  host: 'localhost',      
+  user: 'root',          
+  password: '', 
+  database: 'hrm'  
 });
 
 // Kết nối tới MySQL
