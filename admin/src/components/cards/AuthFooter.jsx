@@ -14,19 +14,13 @@ export default function AuthFooter() {
         sx={{ gap: 2, justifyContent: { xs: 'center', sm: 'space-between', textAlign: { xs: 'center', sm: 'inherit' } } }}
       >
         <Typography variant="subtitle2" color="secondary">
-          © Made with love by Team{' '}
-          <Link href="https://codedthemes.com/" target="_blank" underline="hover">
-            CodedThemes
-          </Link>
+          © Thiết kế và phát triển bởi Team Application
         </Typography>
 
         <Stack direction={{ xs: 'column', sm: 'row' }} sx={{ gap: { xs: 1, sm: 3 }, textAlign: { xs: 'center', sm: 'inherit' } }}>
-        <Typography variant="subtitle2" color="secondary">
-          Distributed by {' '}
-          <Link href="https://themewagon.com/" target="_blank" underline="hover">
-            ThemeWagon
-          </Link>
-        </Typography>
+          <Typography variant="subtitle2" color="secondary">
+            Cung cấp bởi Khối CNTT & Chuyển đổi số
+          </Typography>
         </Stack>
       </Stack>
     </Container>

@@ -1,5 +1,7 @@
 import { RouterProvider } from 'react-router-dom';
 
+import ProtectedRoute from './components/ProtectedRoute';
+
 // project imports
 import router from 'routes';
 import ThemeCustomization from 'themes';

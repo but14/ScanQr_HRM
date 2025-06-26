@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 // material-ui
 import Avatar from '@mui/material/Avatar';
 import AvatarGroup from '@mui/material/AvatarGroup';
@@ -64,7 +64,8 @@ const data = [
     cccd: '012345678901',
     dob: '1990-01-01',
     address: 'Hà Nội',
-    scanTime: '2024-06-24T09:15:00'
+    scanTime: '2024-06-24T09:15:00',
+    factory: 'Nhà máy A'
   },
   {
     id: 2,
@@ -72,7 +73,8 @@ const data = [
     cccd: '098765432109',
     dob: '1992-05-12',
     address: 'TP.HCM',
-    scanTime: '2024-06-24T10:30:00'
+    scanTime: '2024-06-24T10:30:00',
+    factory: 'Nhà máy B'
   }
   // ... thêm dữ liệu thực tế ở đây
 ];
@@ -81,8 +83,18 @@ const data = [
 
 export default function DashboardDefault() {
   const [filterDate, setFilterDate] = useState('');
+  const [data, setData] = useState([]);
 
-  // export excel
+  useEffect(() => {
+    fetch('http://localhost:5000/api/scan/all-employees')
+      .then((res) => res.json())
+      .then((res) => setData(res.employees || []))
+      .catch((err) => {
+        setData([]);
+        console.error('Lỗi lấy dữ liệu:', err);
+      });
+  }, []);
+
   const handleToExcel = () => {
     const ws = XLSX.utils.json_to_sheet(data);
     const wb = XLSX.utils.book_new();
@@ -90,42 +102,58 @@ export default function DashboardDefault() {
     XLSX.writeFile(wb, 'Danh_sach_quet_ma_QR.xlsx');
   };
 
-  // Lọc dữ liệu theo ngày
-  const filteredData = filterDate ? data.filter((row) => row.scanTime.startsWith(filterDate)) : data;
+  const filteredData = filterDate ? data.filter((row) => row.created_at?.startsWith(filterDate)) : data;
 
   return (
-    <MainCard title="Danh sách quét mã QR nhân sự">
+    <MainCard
+      sx={{ height: '90vh', display: 'flex', flexDirection: 'column' }} // Thêm dòng này
+      title={
+        <Typography variant="h4" fontWeight="bold">
+          Danh sách nhân sự
+        </Typography>
+      }
+    >
       <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
-        <Typography>Lọc theo ngày quét:</Typography>
+        <Typography>Lọc theo ngày:</Typography>
         <TextField type="date" size="small" value={filterDate} onChange={(e) => setFilterDate(e.target.value)} />
       </Stack>
-      <Button variant="contained" color="success" onClick={handleToExcel}>
+      <Button variant="contained" color="success" onClick={handleToExcel} sx={{ mb: 2 }}>
         Xuất Excel
       </Button>
-      <TableContainer component={Paper}>
-        <Table>
+      <TableContainer
+        component={Paper}
+        sx={{
+          flex: 1,
+          minHeight: 0,
+          maxHeight: '100%',
+          overflowY: 'auto'
+        }}
+      >
+        <Table stickyHeader>
           <TableHead>
             <TableRow>
               <TableCell>Họ tên</TableCell>
               <TableCell>Số CCCD</TableCell>
               <TableCell>Ngày sinh</TableCell>
               <TableCell>Địa chỉ</TableCell>
+              <TableCell>Nhà máy</TableCell>
               <TableCell>Thời gian quét</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {filteredData.map((row) => (
               <TableRow key={row.id}>
-                <TableCell>{row.name}</TableCell>
-                <TableCell>{row.cccd}</TableCell>
-                <TableCell>{row.dob}</TableCell>
-                <TableCell>{row.address}</TableCell>
-                <TableCell>{new Date(row.scanTime).toLocaleString()}</TableCell>
+                <TableCell>{row.full_name}</TableCell>
+                <TableCell>{row.id_number}</TableCell>
+                <TableCell>{row.date_of_birth ? row.date_of_birth.slice(0, 10) : ''}</TableCell>
+                <TableCell>{row.place_of_residence}</TableCell>
+                <TableCell>{row.factory || ''}</TableCell>
+                <TableCell>{row.created_at ? new Date(row.created_at).toLocaleString() : ''}</TableCell>
               </TableRow>
             ))}
             {filteredData.length === 0 && (
               <TableRow>
-                <TableCell colSpan={5} align="center">
+                <TableCell colSpan={6} align="center">
                   Không có dữ liệu
                 </TableCell>
               </TableRow>

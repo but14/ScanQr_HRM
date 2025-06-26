@@ -5,6 +5,9 @@ const managerModel = require("../models/managerModel");
 require("dotenv").config();
 const JWT_SECRET = process.env.JWT_SECRET_KEY;
 
+
+
+// =========== MANAGER LOGIN ===========
 exports.login = (req, res) => {
   const { email, password } = req.body;
   console.log(`[LOGIN] Nhận yêu cầu đăng nhập với email: ${email}`);
