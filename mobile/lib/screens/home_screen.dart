@@ -20,7 +20,7 @@ class HomeScreen extends StatelessWidget {
                 child: FittedBox(
                   fit: BoxFit.scaleDown,
                   child: Text(
-                    'Hệ thống Quản lý Quét QR Nhân sự',
+                    'Scan2HR',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 24,
@@ -155,7 +155,7 @@ class HomeScreen extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.only(right: 12, bottom: 8),
               child: Text(
-                '© Khối CNTT & Chuyển đổi số',
+                '© Khối CNTT & Chuyển đổi số 1.0',
                 style: TextStyle(
                   color: Colors.black45,
                   fontSize: 12,

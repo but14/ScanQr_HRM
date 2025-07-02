@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 class ManualAddScreen extends StatefulWidget {
-  const ManualAddScreen({super.key});
+  final Map<String, String> ocrData;
+
+  const ManualAddScreen({super.key, this.ocrData = const {}});
 
   @override
   State<ManualAddScreen> createState() => _ManualAddScreenState();
@@ -22,6 +24,21 @@ class _ManualAddScreenState extends State<ManualAddScreen> {
   final TextEditingController managerIdController = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+
+    final ocrData = widget.ocrData;
+    nameController.text = widget.ocrData['full_name'] ?? '';
+    dobController.text = widget.ocrData['date_of_birth'] ?? '';
+    genderController.text = widget.ocrData['gender'] ?? '';
+    nationalityController.text = widget.ocrData['nationality'] ?? '';
+    idNumberController.text = widget.ocrData['id_number'] ?? '';
+    placeOfOriginController.text = widget.ocrData['place_of_origin'] ?? '';
+    placeOfResidenceController.text =
+        widget.ocrData['place_of_residence'] ?? '';
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -34,146 +51,21 @@ class _ManualAddScreenState extends State<ManualAddScreen> {
           key: _formKey,
           child: ListView(
             children: [
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Họ và tên',
-                  prefixIcon: Icon(Icons.person),
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) =>
-                    value == null || value.isEmpty ? 'Nhập họ tên' : null,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: dobController,
-                decoration: const InputDecoration(
-                  labelText: 'Ngày sinh',
-                  prefixIcon: Icon(Icons.cake),
-                  border: OutlineInputBorder(),
-                ),
-                onTap: () async {
-                  FocusScope.of(context).requestFocus(FocusNode());
-                  DateTime? picked = await showDatePicker(
-                    context: context,
-                    initialDate: DateTime(1990, 1, 1),
-                    firstDate: DateTime(1900),
-                    lastDate: DateTime.now(),
-                  );
-                  if (picked != null) {
-                    dobController.text =
-                        "${picked.day.toString().padLeft(2, '0')}/${picked.month.toString().padLeft(2, '0')}/${picked.year}";
-                  }
-                },
-                readOnly: true,
-                validator: (value) =>
-                    value == null || value.isEmpty ? 'Nhập ngày sinh' : null,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: genderController,
-                decoration: const InputDecoration(
-                  labelText: 'Giới tính',
-                  prefixIcon: Icon(Icons.wc),
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) =>
-                    value == null || value.isEmpty ? 'Nhập giới tính' : null,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: nationalityController,
-                decoration: const InputDecoration(
-                  labelText: 'Quốc tịch',
-                  prefixIcon: Icon(Icons.flag),
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) =>
-                    value == null || value.isEmpty ? 'Nhập quốc tịch' : null,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: idNumberController,
-                decoration: const InputDecoration(
-                  labelText: 'Số CCCD/Mã nhân sự',
-                  prefixIcon: Icon(Icons.badge),
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) => value == null || value.isEmpty
-                    ? 'Nhập số CCCD/mã nhân sự'
-                    : null,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: dateOfIssueController,
-                decoration: const InputDecoration(
-                  labelText: 'Ngày cấp',
-                  prefixIcon: Icon(Icons.event),
-                  border: OutlineInputBorder(),
-                ),
-                onTap: () async {
-                  FocusScope.of(context).requestFocus(FocusNode());
-                  DateTime? picked = await showDatePicker(
-                    context: context,
-                    initialDate: DateTime(2020, 1, 1),
-                    firstDate: DateTime(2000),
-                    lastDate: DateTime.now(),
-                  );
-                  if (picked != null) {
-                    dateOfIssueController.text =
-                        "${picked.day.toString().padLeft(2, '0')}/${picked.month.toString().padLeft(2, '0')}/${picked.year}";
-                  }
-                },
-                readOnly: true,
-                validator: (value) =>
-                    value == null || value.isEmpty ? 'Nhập ngày cấp' : null,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: placeOfOriginController,
-                decoration: const InputDecoration(
-                  labelText: 'Nguyên quán',
-                  prefixIcon: Icon(Icons.home),
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) =>
-                    value == null || value.isEmpty ? 'Nhập nguyên quán' : null,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: placeOfResidenceController,
-                decoration: const InputDecoration(
-                  labelText: 'Nơi thường trú',
-                  prefixIcon: Icon(Icons.location_city),
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) => value == null || value.isEmpty
-                    ? 'Nhập nơi thường trú'
-                    : null,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: managerIdController,
-                decoration: const InputDecoration(
-                  labelText: 'Mã quản lý',
-                  prefixIcon: Icon(Icons.supervisor_account),
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) =>
-                    value == null || value.isEmpty ? 'Nhập mã quản lý' : null,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: scanNotesController,
-                decoration: const InputDecoration(
-                  labelText: 'Ghi chú quét',
-                  prefixIcon: Icon(Icons.note_alt),
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) =>
-                    value == null || value.isEmpty ? 'Nhập ghi chú quét' : null,
-              ),
+              _buildTextField(nameController, 'Họ và tên', Icons.person),
+              _buildDateField(dobController, 'Ngày sinh', Icons.cake),
+              _buildTextField(genderController, 'Giới tính', Icons.wc),
+              _buildTextField(nationalityController, 'Quốc tịch', Icons.flag),
+              _buildTextField(
+                  idNumberController, 'Số CCCD/Mã nhân sự', Icons.badge),
+              _buildDateField(dateOfIssueController, 'Ngày cấp', Icons.event),
+              _buildTextField(
+                  placeOfOriginController, 'Nguyên quán', Icons.home),
+              _buildTextField(placeOfResidenceController, 'Nơi thường trú',
+                  Icons.location_city),
+              _buildTextField(
+                  managerIdController, 'Mã quản lý', Icons.supervisor_account),
+              _buildTextField(
+                  scanNotesController, 'Ghi chú quét', Icons.note_alt),
               const SizedBox(height: 28),
               ElevatedButton.icon(
                 icon: const Icon(Icons.save),
@@ -184,7 +76,6 @@ class _ManualAddScreenState extends State<ManualAddScreen> {
                 ),
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
-                    // TODO: Xử lý lưu thông tin nhân sự thủ công
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Đã lưu thành công!')),
                     );
@@ -197,5 +88,68 @@ class _ManualAddScreenState extends State<ManualAddScreen> {
         ),
       ),
     );
+  }
+
+  Widget _buildTextField(
+      TextEditingController controller, String label, IconData icon) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: TextFormField(
+        controller: controller,
+        decoration: InputDecoration(
+          labelText: label,
+          prefixIcon: Icon(icon),
+          border: const OutlineInputBorder(),
+        ),
+        validator: (value) =>
+            value == null || value.isEmpty ? 'Nhập $label' : null,
+      ),
+    );
+  }
+
+  Widget _buildDateField(
+      TextEditingController controller, String label, IconData icon) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: TextFormField(
+        controller: controller,
+        readOnly: true,
+        decoration: InputDecoration(
+          labelText: label,
+          prefixIcon: Icon(icon),
+          border: const OutlineInputBorder(),
+        ),
+        onTap: () async {
+          FocusScope.of(context).requestFocus(FocusNode());
+          DateTime? picked = await showDatePicker(
+            context: context,
+            initialDate: DateTime.now(),
+            firstDate: DateTime(1900),
+            lastDate: DateTime.now(),
+          );
+          if (picked != null) {
+            controller.text =
+                "\${picked.day.toString().padLeft(2, '0')}/\${picked.month.toString().padLeft(2, '0')}/\${picked.year}";
+          }
+        },
+        validator: (value) =>
+            value == null || value.isEmpty ? 'Nhập $label' : null,
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    nameController.dispose();
+    dobController.dispose();
+    genderController.dispose();
+    nationalityController.dispose();
+    idNumberController.dispose();
+    dateOfIssueController.dispose();
+    placeOfOriginController.dispose();
+    placeOfResidenceController.dispose();
+    scanNotesController.dispose();
+    managerIdController.dispose();
+    super.dispose();
   }
 }

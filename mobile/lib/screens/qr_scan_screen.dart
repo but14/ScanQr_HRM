@@ -1,10 +1,12 @@
+// main.dart (hoặc QRScanScreen.dart)
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:path/path.dart';
+import 'package:path/path.dart' as p;
 import 'package:permission_handler/permission_handler.dart';
+import 'manual_add_screen.dart';
 
 class QRScanScreen extends StatefulWidget {
   const QRScanScreen({super.key});
@@ -21,15 +23,12 @@ class _QRScanScreenState extends State<QRScanScreen> {
   @override
   void initState() {
     super.initState();
-    requestPermissions().then((_) {
-      _initializeCamera();
-    });
+    requestPermissions().then((_) => _initializeCamera());
   }
 
   Future<void> requestPermissions() async {
     final cameraStatus = await Permission.camera.request();
     final storageStatus = await Permission.storage.request();
-
     if (cameraStatus.isDenied || storageStatus.isDenied) {
       _showResultDialog(
           '❌ Bạn cần cấp quyền CAMERA và STORAGE để sử dụng tính năng này.');
@@ -39,44 +38,31 @@ class _QRScanScreenState extends State<QRScanScreen> {
   Future<void> _initializeCamera() async {
     final cameras = await availableCameras();
     final backCamera = cameras.firstWhere(
-      (camera) => camera.lensDirection == CameraLensDirection.back,
-    );
-    _cameraController = CameraController(
-      backCamera,
-      ResolutionPreset.high,
-      enableAudio: false,
-    );
-
+        (camera) => camera.lensDirection == CameraLensDirection.back);
+    _cameraController =
+        CameraController(backCamera, ResolutionPreset.high, enableAudio: false);
     await _cameraController.initialize();
-    setState(() {
-      _isCameraInitialized = true;
-    });
+    setState(() => _isCameraInitialized = true);
   }
 
   Future<void> _captureAndProcessImage() async {
     try {
       final directory = await getTemporaryDirectory();
-      final path = join(directory.path, '${DateTime.now()}.jpg');
-
+      final path = p.join(directory.path, '${DateTime.now()}.jpg');
       final imageFile = await _cameraController.takePicture();
       final savedImage = await File(imageFile.path).copy(path);
-
       final inputImage = InputImage.fromFile(savedImage);
       final recognizedText = await _textRecognizer.processImage(inputImage);
-
       final data = _parseOCRData(recognizedText.text);
-
+      if (!mounted) return;
       if (data.containsKey('error')) {
         _showResultDialog('❌ ${data['error']}');
       } else {
-        _showResultDialog('✅ Trích xuất thành công:\n\n'
-            'Số CCCD: ${data['id_number']}\n'
-            'Họ tên: ${data['full_name']}\n'
-            'Ngày sinh: ${data['date_of_birth']}\n'
-            'Giới tính: ${data['gender']}\n'
-            'Quốc tịch: ${data['nationality']}\n'
-            'Quê quán: ${data['place_of_origin']}\n'
-            'Nơi thường trú: ${data['place_of_residence']}');
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ManualAddScreen(ocrData: data),
+            ));
       }
     } catch (e) {
       _showResultDialog('❌ Lỗi xử lý ảnh: $e');
@@ -87,11 +73,6 @@ class _QRScanScreenState extends State<QRScanScreen> {
     try {
       final data = <String, String>{};
       final lines = rawText.split('\n').map((line) => line.trim()).toList();
-
-      for (final line in lines) {
-        debugPrint('OCR Line: $line');
-      }
-
       final cccdRegex = RegExp(r'\b\d{12}\b');
       final dateRegex = RegExp(r'\b\d{2}/\d{2}/\d{4}\b');
       final genderRegex =
@@ -99,7 +80,10 @@ class _QRScanScreenState extends State<QRScanScreen> {
       final nationalityRegex =
           RegExp(r'Việt Nam|Vietnam', caseSensitive: false);
 
-      // Tìm số CCCD bất kỳ dòng nào
+      for (final line in lines) {
+        debugPrint('OCR Line: $line');
+      }
+
       for (final line in lines) {
         final match = cccdRegex.firstMatch(line);
         if (match != null) {
@@ -181,12 +165,12 @@ class _QRScanScreenState extends State<QRScanScreen> {
     BuildContext ctx = this.context;
     showDialog(
       context: ctx,
-      builder: (BuildContext dialogContext) => AlertDialog(
+      builder: (context) => AlertDialog(
         title: const Text('Kết quả OCR'),
         content: Text(result),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
+            onPressed: () => Navigator.pop(context),
             child: const Text('Đóng'),
           ),
         ],
@@ -209,11 +193,7 @@ class _QRScanScreenState extends State<QRScanScreen> {
           ? Stack(
               children: [
                 CameraPreview(_cameraController),
-
-                // Overlay mờ + khung CCD giữa màn hình
-                Container(
-                  color: Colors.black.withOpacity(0.3),
-                ),
+                Container(color: Colors.black.withOpacity(0.3)),
                 Align(
                   alignment: Alignment.center,
                   child: AspectRatio(
@@ -227,8 +207,6 @@ class _QRScanScreenState extends State<QRScanScreen> {
                     ),
                   ),
                 ),
-
-                // Nút chụp ảnh
                 Positioned(
                   bottom: 30,
                   left: 0,
