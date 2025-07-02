@@ -75,6 +75,7 @@ class _QRScanScreenState extends State<QRScanScreen> {
             'Ngày sinh: ${data['date_of_birth']}\n'
             'Giới tính: ${data['gender']}\n'
             'Quốc tịch: ${data['nationality']}\n'
+            'Quê quán: ${data['place_of_origin']}\n'
             'Nơi thường trú: ${data['place_of_residence']}');
       }
     } catch (e) {
@@ -87,7 +88,6 @@ class _QRScanScreenState extends State<QRScanScreen> {
       final data = <String, String>{};
       final lines = rawText.split('\n').map((line) => line.trim()).toList();
 
-      // In ra toàn bộ kết quả OCR để debug
       for (final line in lines) {
         debugPrint('OCR Line: $line');
       }
@@ -99,7 +99,7 @@ class _QRScanScreenState extends State<QRScanScreen> {
       final nationalityRegex =
           RegExp(r'Việt Nam|Vietnam', caseSensitive: false);
 
-      // Bắt số CCCD đầu tiên có định dạng 12 chữ số ở bất kỳ dòng nào
+      // Tìm số CCCD bất kỳ dòng nào
       for (final line in lines) {
         final match = cccdRegex.firstMatch(line);
         if (match != null) {
@@ -112,14 +112,10 @@ class _QRScanScreenState extends State<QRScanScreen> {
         final line = lines[i];
         final lower = line.toLowerCase();
 
-        // Họ và tên
-        if (lower.contains('full name')) {
-          if (i + 1 < lines.length) {
-            data['full_name'] = lines[i + 1];
-          }
+        if (lower.contains('full name') && i + 1 < lines.length) {
+          data['full_name'] = lines[i + 1];
         }
 
-        // Ngày sinh
         if (lower.contains('date of birth')) {
           if (i + 1 < lines.length && dateRegex.hasMatch(lines[i + 1])) {
             data['date_of_birth'] =
@@ -129,7 +125,6 @@ class _QRScanScreenState extends State<QRScanScreen> {
           }
         }
 
-        // Giới tính
         if (lower.contains('sex')) {
           final match = genderRegex.firstMatch(line);
           if (match != null) {
@@ -137,7 +132,6 @@ class _QRScanScreenState extends State<QRScanScreen> {
           }
         }
 
-        // Quốc tịch
         if (lower.contains('nationality')) {
           final match = nationalityRegex.firstMatch(line);
           if (match != null) {
@@ -150,25 +144,17 @@ class _QRScanScreenState extends State<QRScanScreen> {
           }
         }
 
-        // Quê quán
-        if (lower.contains('place of origin')) {
-          if (i + 1 < lines.length) {
-            data['place_of_origin'] = lines[i + 1];
-          }
+        if (lower.contains('place of origin') && i + 1 < lines.length) {
+          data['place_of_origin'] = lines[i + 1];
         }
 
-        // Nơi thường trú
-        if (lower.contains('place of residence')) {
-          if (i + 1 < lines.length) {
-            data['place_of_residence'] = lines[i + 1];
-          }
+        if (lower.contains('place of residence') && i + 1 < lines.length) {
+          data['place_of_residence'] = lines[i + 1];
         }
       }
 
-      // Nếu không có nationality, mặc định là Việt Nam
       data.putIfAbsent('nationality', () => 'Việt Nam');
 
-      // Kiểm tra đầy đủ trường
       final requiredFields = [
         'id_number',
         'full_name',
@@ -223,6 +209,26 @@ class _QRScanScreenState extends State<QRScanScreen> {
           ? Stack(
               children: [
                 CameraPreview(_cameraController),
+
+                // Overlay mờ + khung CCD giữa màn hình
+                Container(
+                  color: Colors.black.withOpacity(0.3),
+                ),
+                Align(
+                  alignment: Alignment.center,
+                  child: AspectRatio(
+                    aspectRatio: 86 / 54,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.transparent,
+                        border: Border.all(color: Colors.greenAccent, width: 2),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                ),
+
+                // Nút chụp ảnh
                 Positioned(
                   bottom: 30,
                   left: 0,
@@ -234,7 +240,7 @@ class _QRScanScreenState extends State<QRScanScreen> {
                       label: const Text('Chụp & Nhận dạng'),
                     ),
                   ),
-                )
+                ),
               ],
             )
           : const Center(child: CircularProgressIndicator()),
