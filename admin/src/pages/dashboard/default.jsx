@@ -86,7 +86,12 @@ export default function DashboardDefault() {
   const [data, setData] = useState([]);
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/scan/all-employees')
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user?.id) {
+      setData([]);
+      return;
+    }
+    fetch(`http://localhost:5000/api/scan/employees-by-manager?manager_id=${user.id}`)
       .then((res) => res.json())
       .then((res) => setData(res.employees || []))
       .catch((err) => {
@@ -96,7 +101,16 @@ export default function DashboardDefault() {
   }, []);
 
   const handleToExcel = () => {
-    const ws = XLSX.utils.json_to_sheet(data);
+    // Chỉ lấy các trường hiển thị trên bảng
+    const exportData = filteredData.map((row) => ({
+      'Họ tên': row.full_name,
+      'Số CCCD': row.id_number,
+      'Ngày sinh': row.date_of_birth ? row.date_of_birth.slice(0, 10) : '',
+      'Địa chỉ': row.place_of_residence,
+      'Nhà máy': row.factory || '',
+      'Thời gian quét': row.created_at ? new Date(row.created_at).toLocaleString() : ''
+    }));
+    const ws = XLSX.utils.json_to_sheet(exportData);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Danh sách quét mã QR');
     XLSX.writeFile(wb, 'Danh_sach_quet_ma_QR.xlsx');

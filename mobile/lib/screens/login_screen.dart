@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/screens/home_screen.dart';
 
+
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
 
@@ -108,7 +109,7 @@ class LoginScreen extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.only(right: 12, bottom: 8),
               child: Text(
-                '© Khối CNTT & Chuyển đổi số',
+                '© Khối CNTT & Chuyển đổi số 1.0',
                 style: TextStyle(
                   color: Colors.black45,
                   fontSize: 12,

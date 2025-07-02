@@ -10,6 +10,6 @@ app.use(express.json());
 app.use("/api/scan", require("./routes/scanRoutes"));
 app.use("/api/auth", require("./routes/authRoutes"));
 
-app.listen(port, () => {
-  console.log(`Server đang chạy tại http://localhost:${port}`);
+app.listen(port, "0.0.0.0", () => {
+  console.log(`Server đang chạy tại http://0.0.0.0:${port}`);
 });

@@ -64,8 +64,8 @@ exports.scanCCCD = (req, res) => {
           // Nếu chưa có, tạo mới nhân viên
           const insertQuery = `
             INSERT INTO employees
-            (full_name, date_of_birth, gender, nationality, id_number, date_of_issue, place_of_origin, place_of_residence)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            (full_name, date_of_birth, gender, nationality, id_number, date_of_issue, place_of_origin, place_of_residence, manager_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
           `;
           connection.query(
             insertQuery,
@@ -78,6 +78,7 @@ exports.scanCCCD = (req, res) => {
               date_of_issue,
               place_of_origin,
               place_of_residence,
+              manager_id,
             ],
             (err, result) => {
               if (err) {
@@ -169,6 +170,26 @@ exports.getEmployeesByDate = (req, res) => {
     (err, results) => {
       if (err) {
         console.error("[EMPLOYEE] Lỗi truy vấn theo ngày:", err);
+        return res.status(500).json({ error: "Lỗi server" });
+      }
+      res.json({ employees: results });
+    }
+  );
+};
+
+// GET employees by manager
+exports.getEmployeesByManager = (req, res) => {
+  const connection = require("../database/connect");
+  const { manager_id } = req.query;
+  if (!manager_id) {
+    return res.status(400).json({ error: "Thiếu manager_id" });
+  }
+  connection.query(
+    "SELECT * FROM employees WHERE manager_id = ?",
+    [manager_id],
+    (err, results) => {
+      if (err) {
+        console.error("[EMPLOYEE] Lỗi truy vấn theo manager:", err);
         return res.status(500).json({ error: "Lỗi server" });
       }
       res.json({ employees: results });

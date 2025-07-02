@@ -7,5 +7,6 @@ const scanController = require("../controllers/scanController");
 router.post("/scan-cccd", scanController.scanCCCD);
 router.get("/all-employees", scanController.getAllEmployees);
 router.get("/employees-by-date", scanController.getEmployeesByDate);
+router.get("/employees-by-manager", scanController.getEmployeesByManager);
 
 module.exports = router;
