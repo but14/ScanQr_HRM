@@ -1,4 +1,3 @@
-// main.dart (hoặc QRScanScreen.dart)
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
@@ -6,6 +5,7 @@ import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'package:permission_handler/permission_handler.dart';
+import 'package:vibration/vibration.dart'; // Import gói vibration
 import 'manual_add_screen.dart';
 
 class QRScanScreen extends StatefulWidget {
@@ -19,6 +19,7 @@ class _QRScanScreenState extends State<QRScanScreen> {
   late CameraController _cameraController;
   bool _isCameraInitialized = false;
   final TextRecognizer _textRecognizer = TextRecognizer();
+  late Size _imageSize;
 
   @override
   void initState() {
@@ -39,33 +40,61 @@ class _QRScanScreenState extends State<QRScanScreen> {
     final cameras = await availableCameras();
     final backCamera = cameras.firstWhere(
         (camera) => camera.lensDirection == CameraLensDirection.back);
-    _cameraController =
-        CameraController(backCamera, ResolutionPreset.high, enableAudio: false);
+
+    _cameraController = CameraController(
+      backCamera,
+      ResolutionPreset.high,
+      enableAudio: false,
+    );
+
     await _cameraController.initialize();
+
+    // Đặt chế độ lấy nét tự động
+    await _cameraController.setFocusMode(FocusMode.auto);
+
+    // Lấy kích thước độ phân giải của camera
+    _imageSize = await _cameraController.value.previewSize!;
+
     setState(() => _isCameraInitialized = true);
+
+    // Bắt đầu quá trình quét liên tục
+    _startFrameProcessing();
   }
 
-  Future<void> _captureAndProcessImage() async {
-    try {
+  Future<void> _startFrameProcessing() async {
+    while (_isCameraInitialized) {
+      await Future.delayed(
+          Duration(milliseconds: 500)); // Xử lý mỗi khung hình sau 500ms
+
+      final image = await _cameraController.takePicture();
       final directory = await getTemporaryDirectory();
       final path = p.join(directory.path, '${DateTime.now()}.jpg');
-      final imageFile = await _cameraController.takePicture();
-      final savedImage = await File(imageFile.path).copy(path);
+      final savedImage = await File(image.path).copy(path);
       final inputImage = InputImage.fromFile(savedImage);
+
       final recognizedText = await _textRecognizer.processImage(inputImage);
       final data = _parseOCRData(recognizedText.text);
-      if (!mounted) return;
-      if (data.containsKey('error')) {
-        _showResultDialog('❌ ${data['error']}');
-      } else {
+
+      if (data.isNotEmpty && !data.containsKey('error')) {
+        // Nếu dữ liệu hợp lệ, rung điện thoại
+        _triggerVibration();
+
+        // Tự động chuyển màn hình nếu có dữ liệu OCR hợp lệ
         Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ManualAddScreen(ocrData: data),
-            ));
+          context,
+          MaterialPageRoute(
+            builder: (context) => ManualAddScreen(ocrData: data),
+          ),
+        );
+        break; // Thoát sau khi nhận diện thành công
       }
-    } catch (e) {
-      _showResultDialog('❌ Lỗi xử lý ảnh: $e');
+    }
+  }
+
+  // Hàm rung điện thoại
+  void _triggerVibration() async {
+    if (await Vibration.hasVibrator()) {
+      Vibration.vibrate(duration: 500); // Rung trong 500ms
     }
   }
 
@@ -79,10 +108,6 @@ class _QRScanScreenState extends State<QRScanScreen> {
           RegExp(r'\b(Nam|Nữ|Male|Female)\b', caseSensitive: false);
       final nationalityRegex =
           RegExp(r'Việt Nam|Vietnam', caseSensitive: false);
-
-      for (final line in lines) {
-        debugPrint('OCR Line: $line');
-      }
 
       for (final line in lines) {
         final match = cccdRegex.firstMatch(line);
@@ -204,18 +229,6 @@ class _QRScanScreenState extends State<QRScanScreen> {
                         border: Border.all(color: Colors.greenAccent, width: 2),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                    ),
-                  ),
-                ),
-                Positioned(
-                  bottom: 30,
-                  left: 0,
-                  right: 0,
-                  child: Center(
-                    child: ElevatedButton.icon(
-                      onPressed: _captureAndProcessImage,
-                      icon: const Icon(Icons.camera_alt),
-                      label: const Text('Chụp & Nhận dạng'),
                     ),
                   ),
                 ),

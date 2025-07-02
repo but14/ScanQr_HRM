@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:mobile/screens/history_screen.dart';
 import 'package:mobile/screens/manual_add_screen.dart';
 import 'package:mobile/screens/qr_scan_screen.dart';
+import 'package:intl/intl.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -23,7 +25,7 @@ class HomeScreen extends StatelessWidget {
                     'Scan2HR',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 24,
+                      fontSize: 36,
                       fontWeight: FontWeight.w900,
                       letterSpacing: 1.2,
                       shadows: [
@@ -62,23 +64,17 @@ class HomeScreen extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 18),
-                const Text(
-                  'Xin chào, Nguyễn Văn A', // Thay bằng biến tên động nếu có
-                  style: TextStyle(
-                    fontSize: 18,
-                    color: Colors.black87,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 50),
+                // Remove this row with name for now
+                const SizedBox(height: 100),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Icon(Icons.calendar_today, size: 18, color: Colors.black54),
-                    SizedBox(width: 6),
+                  children: [
+                    const Icon(Icons.calendar_today,
+                        size: 18, color: Colors.black54),
+                    const SizedBox(width: 6),
                     Text(
-                      'Hôm nay: 25/06/2025 | Ca: Sáng',
-                      style: TextStyle(
+                      'Hôm nay: ${DateFormat('dd/MM/yyyy').format(DateTime.now())}',
+                      style: const TextStyle(
                         fontSize: 15,
                         color: Colors.black87,
                         fontWeight: FontWeight.w500,
@@ -86,8 +82,19 @@ class HomeScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-// Thêm menu chức năng phụ
+                // Move name down below the date section
+                const SizedBox(height: 62),
+                const Text(
+                  'Xin chào, Nguyễn Văn A', // Thay bằng biến tên động nếu cós
+                  style: TextStyle(
+                    fontSize: 28,
+                    color: Colors.black87,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 50),
 
+                // Thêm menu chức năng phụ
                 const Spacer(), // Đẩy các nút xuống giữa
                 Padding(
                   padding:
@@ -102,7 +109,7 @@ class HomeScreen extends StatelessWidget {
                     children: [
                       _HomeCardButton(
                         icon: Icons.qr_code_scanner,
-                        label: 'Quét mã QR',
+                        label: 'Thêm nhanh',
                         onTap: () {
                           Navigator.push(
                             context,
@@ -115,9 +122,14 @@ class HomeScreen extends StatelessWidget {
                       ),
                       _HomeCardButton(
                         icon: Icons.history,
-                        label: 'Lịch sử quét',
+                        label: 'Lịch sử',
                         onTap: () {
-                          // TODO: Điều hướng tới màn hình lịch sử quét
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => HistoryScreen(),
+                            ),
+                          );
                         },
                         color: Colors.blue.shade800,
                       ),

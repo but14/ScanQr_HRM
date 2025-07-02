@@ -8,11 +8,10 @@ exports.scanCCCD = (req, res) => {
     gender,
     nationality,
     id_number,
-    date_of_issue,
     place_of_origin,
     place_of_residence,
-    manager_id, // truyền từ client hoặc lấy từ token
-    scan_notes, // tùy chọn
+    manager_id, // Truyền từ client hoặc lấy từ token
+    scan_notes, // Tùy chọn
   } = req.body;
 
   console.log(`[SCAN] Nhận yêu cầu quét CCCD: ${id_number}`);
@@ -64,9 +63,10 @@ exports.scanCCCD = (req, res) => {
           // Nếu chưa có, tạo mới nhân viên
           const insertQuery = `
             INSERT INTO employees
-            (full_name, date_of_birth, gender, nationality, id_number, date_of_issue, place_of_origin, place_of_residence, manager_id)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            (full_name, date_of_birth, gender, nationality, id_number, place_of_origin, place_of_residence, manager_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
           `;
+
           connection.query(
             insertQuery,
             [
@@ -75,7 +75,6 @@ exports.scanCCCD = (req, res) => {
               gender,
               nationality,
               id_number,
-              date_of_issue,
               place_of_origin,
               place_of_residence,
               manager_id,
@@ -144,6 +143,28 @@ exports.scanCCCD = (req, res) => {
     );
   }
 };
+
+// Hàm ghi log vào bảng scan_logs
+function insertScanLog(employeeId, managerId, location, notes) {
+  if (!employeeId || !managerId) {
+    console.warn("[SCAN_LOG] Thiếu employeeId hoặc managerId khi ghi log.");
+    return;
+  }
+  connection.query(
+    `INSERT INTO scan_logs (employee_id, manager_id, scan_location, scan_notes)
+       VALUES (?, ?, ?, ?)`,
+    [employeeId, managerId, location || null, notes || null],
+    (err, result) => {
+      if (err) {
+        console.error("[SCAN_LOG] Lỗi ghi log quét:", err);
+      } else {
+        console.log(
+          `[SCAN_LOG] Đã ghi log quét: employee_id=${employeeId}, manager_id=${managerId}, scan_location=${location}`
+        );
+      }
+    }
+  );
+}
 
 // =========== GET ALL SCANS ===========
 exports.getAllEmployees = (req, res) => {
