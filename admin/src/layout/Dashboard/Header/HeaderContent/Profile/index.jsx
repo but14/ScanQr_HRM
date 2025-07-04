@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types';
 import { useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 // material-ui
 import { useTheme } from '@mui/material/styles';
@@ -50,6 +51,7 @@ function a11yProps(index) {
 
 export default function Profile() {
   const theme = useTheme();
+  const navigate = useNavigate();
 
   const user = JSON.parse(localStorage.getItem('user'));
   const userName = user?.name || '';
@@ -71,6 +73,13 @@ export default function Profile() {
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setOpen(false);
+    navigate('/login');
   };
 
   return (
@@ -135,7 +144,7 @@ export default function Profile() {
                       </Grid>
                       <Grid>
                         <Tooltip title="Đăng xuất">
-                          <IconButton size="large" sx={{ color: 'text.primary' }}>
+                          <IconButton size="large" sx={{ color: 'text.primary' }} onClick={handleLogout}>
                             <LogoutOutlined />
                           </IconButton>
                         </Tooltip>

@@ -64,13 +64,13 @@ class _QRScanScreenState extends State<QRScanScreen> {
   Future<void> _startFrameProcessing() async {
     while (_isCameraInitialized) {
       await Future.delayed(
-          Duration(milliseconds: 500)); // Xử lý mỗi khung hình sau 500ms
+          Duration(milliseconds: 200)); // Xử lý mỗi khung hình sau 500ms
 
       final image = await _cameraController.takePicture();
-      final directory = await getTemporaryDirectory();
-      final path = p.join(directory.path, '${DateTime.now()}.jpg');
-      final savedImage = await File(image.path).copy(path);
-      final inputImage = InputImage.fromFile(savedImage);
+      // final directory = await getTemporaryDirectory();
+      // final path = p.join(directory.path, '${DateTime.now()}.jpg');
+      // final savedImage = await File(image.path).copy(path);
+      final inputImage = InputImage.fromFilePath(image.path);
 
       final recognizedText = await _textRecognizer.processImage(inputImage);
       final data = _parseOCRData(recognizedText.text);

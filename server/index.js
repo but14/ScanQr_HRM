@@ -14,6 +14,11 @@ app.use(express.json());
 // Route
 app.use("/api/scan", require("./routes/scanRoutes"));
 app.use("/api/auth", require("./routes/authRoutes"));
+app.use("/api/protected", require("./routes/protectedRoutes"));
+
+app.use((req, res, next) => {
+  res.status(404).json({ error: "Not found" });
+});
 
 // Khởi động server
 app.listen(port, host, () => {

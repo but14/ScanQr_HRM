@@ -87,7 +87,7 @@ export default function AuthLogin({ isDemo = false }) {
           submit: null
         }}
         validationSchema={Yup.object().shape({
-          email: Yup.string().email('Email không hợp lệ!').max(255).required('Vui lòng nhập địa chỉ email!'),
+          email: Yup.string().max(255).required('Vui lòng nhập thông tin tài khoản!'),
           password: Yup.string()
             .required('Vui lòng nhập mật khẩu!')
             .test(
@@ -104,15 +104,15 @@ export default function AuthLogin({ isDemo = false }) {
             <Grid container spacing={3}>
               <Grid size={12}>
                 <Stack sx={{ gap: 1 }}>
-                  <InputLabel htmlFor="email-login">Địa chỉ email</InputLabel>
+                  <InputLabel htmlFor="email-login">Tên tài khoản</InputLabel>
                   <OutlinedInput
                     id="email-login"
-                    type="email"
+                    type="text"
                     value={values.email}
                     name="email"
                     onBlur={handleBlur}
                     onChange={handleChange}
-                    placeholder="Nhâp địa chỉ email"
+                    placeholder="Nhập thông tin tài khoản"
                     fullWidth
                     error={Boolean(touched.email && errors.email)}
                   />

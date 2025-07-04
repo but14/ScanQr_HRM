@@ -5,12 +5,11 @@ const managerModel = require("../models/managerModel");
 require("dotenv").config();
 const JWT_SECRET = process.env.JWT_SECRET_KEY;
 
-
-
 // =========== MANAGER LOGIN ===========
 exports.login = (req, res) => {
   const { email, password } = req.body;
   console.log(`[LOGIN] Nhận yêu cầu đăng nhập với email: ${email}`);
+
   managerModel.findByEmail(email, (err, manager) => {
     if (err) {
       console.error("[LOGIN] Lỗi server khi tìm manager:", err);
@@ -32,13 +31,20 @@ exports.login = (req, res) => {
         return res.status(401).json({ error: "Sai mật khẩu" });
       }
 
-      // Tạo JWT
+      // ✅ Tạo JWT có role
       const token = jwt.sign(
-        { id: manager.id, email: manager.email, name: manager.name },
+        {
+          id: manager.id,
+          email: manager.email,
+          name: manager.name,
+          role: manager.role, // 🟢 Thêm role vào đây để phân quyền
+        },
         JWT_SECRET,
         { expiresIn: "1d" }
       );
+
       console.log(`[LOGIN] Đăng nhập thành công: ${email}`);
+
       res.json({
         token,
         manager: {
@@ -46,6 +52,7 @@ exports.login = (req, res) => {
           name: manager.name,
           email: manager.email,
           location: manager.location,
+          role: manager.role, // 🟢 Trả về role cho client luôn
         },
       });
     });
@@ -54,8 +61,9 @@ exports.login = (req, res) => {
 
 // =========== CREATE MANAGER ===========
 exports.register = (req, res) => {
-  const { name, email, password, location } = req.body;
+  const { name, email, password, location, role } = req.body; // thêm role
   console.log(`[REGISTER] Nhận yêu cầu tạo tài khoản cho email: ${email}`);
+
   if (!name || !email || !password || !location) {
     console.warn("[REGISTER] Thiếu thông tin đăng ký:", {
       name,
@@ -64,6 +72,7 @@ exports.register = (req, res) => {
     });
     return res.status(400).json({ error: "Thiếu thông tin" });
   }
+
   // Kiểm tra email đã tồn tại chưa
   managerModel.findByEmail(email, (err, manager) => {
     if (err) {
@@ -82,22 +91,29 @@ exports.register = (req, res) => {
         console.error("[REGISTER] Lỗi mã hóa mật khẩu:", err);
         return res.status(500).json({ error: "Lỗi mã hóa mật khẩu" });
       }
-      managerModel.create(
-        { name, email, password_hash: hash, location },
-        (err, result) => {
-          if (err) {
-            console.error("[REGISTER] Lỗi tạo tài khoản:", err);
-            return res.status(500).json({ error: "Lỗi tạo tài khoản" });
-          }
-          console.log(
-            `[REGISTER] Tạo tài khoản thành công cho email: ${email}, id: ${result.insertId}`
-          );
-          res.json({
-            message: "Tạo tài khoản thành công",
-            managerId: result.insertId,
-          });
+
+      // Gán role mặc định nếu không truyền
+      const managerData = {
+        name,
+        email,
+        password_hash: hash,
+        location,
+        role: role || "admin", // mặc định là 'staff'
+      };
+
+      managerModel.create(managerData, (err, result) => {
+        if (err) {
+          console.error("[REGISTER] Lỗi tạo tài khoản:", err);
+          return res.status(500).json({ error: "Lỗi tạo tài khoản" });
         }
-      );
+        console.log(
+          `[REGISTER] Tạo tài khoản thành công cho email: ${email}, id: ${result.insertId}`
+        );
+        res.json({
+          message: "Tạo tài khoản thành công",
+          managerId: result.insertId,
+        });
+      });
     });
   });
 };

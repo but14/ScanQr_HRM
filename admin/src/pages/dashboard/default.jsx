@@ -1,21 +1,6 @@
 import React, { useEffect, useState } from 'react';
 // material-ui
-import Avatar from '@mui/material/Avatar';
-import AvatarGroup from '@mui/material/AvatarGroup';
 import Button from '@mui/material/Button';
-import Grid from '@mui/material/Grid2';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemAvatar from '@mui/material/ListItemAvatar';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemText from '@mui/material/ListItemText';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
-import Box from '@mui/material/Box';
-
-// Excel
-import * as XLSX from 'xlsx';
-
 import TextField from '@mui/material/TextField';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -24,65 +9,18 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
+import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
+
+// Excel
+import * as XLSX from 'xlsx';
 
 // project imports
 import MainCard from 'components/MainCard';
-import AnalyticEcommerce from 'components/cards/statistics/AnalyticEcommerce';
-import MonthlyBarChart from 'sections/dashboard/default/MonthlyBarChart';
-import ReportAreaChart from 'sections/dashboard/default/ReportAreaChart';
-import UniqueVisitorCard from 'sections/dashboard/default/UniqueVisitorCard';
-import SaleReportCard from 'sections/dashboard/default/SaleReportCard';
-import OrdersTable from 'sections/dashboard/default/OrdersTable';
-
-// assets
-import GiftOutlined from '@ant-design/icons/GiftOutlined';
-import MessageOutlined from '@ant-design/icons/MessageOutlined';
-import SettingOutlined from '@ant-design/icons/SettingOutlined';
-
-// avatar style
-const avatarSX = {
-  width: 36,
-  height: 36,
-  fontSize: '1rem'
-};
-
-// action style
-const actionSX = {
-  mt: 0.75,
-  ml: 1,
-  top: 'auto',
-  right: 'auto',
-  alignSelf: 'flex-start',
-  transform: 'none'
-};
-
-// Dummy data mẫu
-const data = [
-  {
-    id: 1,
-    name: 'Nguyễn Văn A',
-    cccd: '012345678901',
-    dob: '1990-01-01',
-    address: 'Hà Nội',
-    scanTime: '2024-06-24T09:15:00',
-    factory: 'Nhà máy A'
-  },
-  {
-    id: 2,
-    name: 'Trần Thị B',
-    cccd: '098765432109',
-    dob: '1992-05-12',
-    address: 'TP.HCM',
-    scanTime: '2024-06-24T10:30:00',
-    factory: 'Nhà máy B'
-  }
-  // ... thêm dữ liệu thực tế ở đây
-];
-
-// ==============================|| DASHBOARD - DEFAULT ||============================== //
 
 export default function DashboardDefault() {
-  const [filterDate, setFilterDate] = useState('');
+  const [filterStartDate, setFilterStartDate] = useState('');
+  const [filterEndDate, setFilterEndDate] = useState('');
   const [data, setData] = useState([]);
 
   useEffect(() => {
@@ -91,7 +29,7 @@ export default function DashboardDefault() {
       setData([]);
       return;
     }
-    fetch(`http://localhost:5000/api/scan/employees-by-manager?manager_id=${user.id}`)
+    fetch(`https://corehr.igroup.com.vn/api/scan/employees-by-manager?manager_id=${user.id}`)
       .then((res) => res.json())
       .then((res) => setData(res.employees || []))
       .catch((err) => {
@@ -100,13 +38,25 @@ export default function DashboardDefault() {
       });
   }, []);
 
+  // Hàm để xử lý và lọc dữ liệu theo ngày
+  const filteredData = data.filter((row) => {
+    const rowDate = new Date(row.created_at);
+    const startDate = new Date(filterStartDate);
+    const endDate = new Date(filterEndDate);
+
+    const isAfterStart = !filterStartDate || rowDate >= startDate;
+    const isBeforeEnd = !filterEndDate || rowDate <= endDate;
+
+    return isAfterStart && isBeforeEnd;
+  });
+
   const handleToExcel = () => {
-    // Chỉ lấy các trường hiển thị trên bảng
     const exportData = filteredData.map((row) => ({
       'Họ tên': row.full_name,
       'Số CCCD': row.id_number,
       'Ngày sinh': row.date_of_birth ? row.date_of_birth.slice(0, 10) : '',
       'Địa chỉ': row.place_of_residence,
+      'Số điện thoại': row.phone_number || '',
       'Nhà máy': row.factory || '',
       'Thời gian quét': row.created_at ? new Date(row.created_at).toLocaleString() : ''
     }));
@@ -116,11 +66,9 @@ export default function DashboardDefault() {
     XLSX.writeFile(wb, 'Danh_sach_quet_ma_QR.xlsx');
   };
 
-  const filteredData = filterDate ? data.filter((row) => row.created_at?.startsWith(filterDate)) : data;
-
   return (
     <MainCard
-      sx={{ height: '90vh', display: 'flex', flexDirection: 'column' }} // Thêm dòng này
+      sx={{ height: '90vh', display: 'flex', flexDirection: 'column' }}
       title={
         <Typography variant="h4" fontWeight="bold">
           Danh sách nhân sự
@@ -128,21 +76,17 @@ export default function DashboardDefault() {
       }
     >
       <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
-        <Typography>Lọc theo ngày:</Typography>
-        <TextField type="date" size="small" value={filterDate} onChange={(e) => setFilterDate(e.target.value)} />
+        <Typography>Từ ngày:</Typography>
+        <TextField type="date" size="small" value={filterStartDate} onChange={(e) => setFilterStartDate(e.target.value)} />
+        <Typography>Đến ngày:</Typography>
+        <TextField type="date" size="small" value={filterEndDate} onChange={(e) => setFilterEndDate(e.target.value)} />
       </Stack>
+
       <Button variant="contained" color="success" onClick={handleToExcel} sx={{ mb: 2 }}>
         Xuất Excel
       </Button>
-      <TableContainer
-        component={Paper}
-        sx={{
-          flex: 1,
-          minHeight: 0,
-          maxHeight: '100%',
-          overflowY: 'auto'
-        }}
-      >
+
+      <TableContainer component={Paper} sx={{ flex: 1, minHeight: 0, maxHeight: '100%', overflowY: 'auto' }}>
         <Table stickyHeader>
           <TableHead>
             <TableRow>
@@ -150,6 +94,7 @@ export default function DashboardDefault() {
               <TableCell>Số CCCD</TableCell>
               <TableCell>Ngày sinh</TableCell>
               <TableCell>Địa chỉ</TableCell>
+              <TableCell>Số điện thoại</TableCell>
               <TableCell>Nhà máy</TableCell>
               <TableCell>Thời gian quét</TableCell>
             </TableRow>
@@ -159,15 +104,16 @@ export default function DashboardDefault() {
               <TableRow key={row.id}>
                 <TableCell>{row.full_name}</TableCell>
                 <TableCell>{row.id_number}</TableCell>
-                <TableCell>{row.date_of_birth ? row.date_of_birth.slice(0, 10) : ''}</TableCell>
+                <TableCell>{row.date_of_birth ? new Date(row.date_of_birth).toLocaleDateString('vi-VN') : ''}</TableCell>
                 <TableCell>{row.place_of_residence}</TableCell>
-                <TableCell>{row.factory || ''}</TableCell>
+                <TableCell>{row.phone}</TableCell>
+                <TableCell>{row.factory || 'F17'}</TableCell>
                 <TableCell>{row.created_at ? new Date(row.created_at).toLocaleString() : ''}</TableCell>
               </TableRow>
             ))}
             {filteredData.length === 0 && (
               <TableRow>
-                <TableCell colSpan={6} align="center">
+                <TableCell colSpan={7} align="center">
                   Không có dữ liệu
                 </TableCell>
               </TableRow>

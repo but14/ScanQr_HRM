@@ -1,6 +1,7 @@
 import 'dart:convert'; // Thêm import này để sử dụng json.encode
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http; // Thêm import http
+import 'package:mobile/screens/home_screen.dart';
 import 'manual_add_screen.dart';
 import 'package:intl/intl.dart';
 
@@ -43,6 +44,7 @@ class _ManualAddScreenState extends State<ManualAddScreen> {
     placeOfOriginController.text = widget.ocrData['place_of_origin'] ?? '';
     placeOfResidenceController.text =
         widget.ocrData['place_of_residence'] ?? '';
+    managerIdController.text = '3';
   }
 
   String formatDate(String date) {
@@ -77,7 +79,7 @@ class _ManualAddScreenState extends State<ManualAddScreen> {
       try {
         final response = await http.post(
           Uri.parse(
-              'http://192.168.0.193:5000/api/scan/scan-cccd'), // Thay bằng URL API của bạn
+              'http://192.168.0.109:5000/api/scan/scan-cccd'), // Thay bằng URL API của bạn
           headers: {
             'Content-Type': 'application/json',
           },
@@ -97,7 +99,12 @@ class _ManualAddScreenState extends State<ManualAddScreen> {
                   TextButton(
                     onPressed: () {
                       Navigator.of(context).pop(); // Đóng dialog
-                      Navigator.of(context).pop(); // Quay lại màn hình trước
+                      Navigator.of(context).pushAndRemoveUntil(
+                        MaterialPageRoute(
+                            builder: (context) => const HomeScreen()),
+                        (Route<dynamic> route) =>
+                            false, // Xóa hết các màn hình trước đó
+                      );
                     },
                     child: const Text('OK'),
                   ),

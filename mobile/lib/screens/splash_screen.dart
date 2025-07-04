@@ -61,7 +61,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 ),
                 const SizedBox(height: 32),
                 const Text(
-                  'Scan2HR',
+                  'Nhân sự',
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,

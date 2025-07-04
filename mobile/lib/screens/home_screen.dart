@@ -22,7 +22,7 @@ class HomeScreen extends StatelessWidget {
                 child: FittedBox(
                   fit: BoxFit.scaleDown,
                   child: Text(
-                    'Scan2HR',
+                    'Nhân sự',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 36,
@@ -54,7 +54,7 @@ class HomeScreen extends StatelessWidget {
                     Icon(Icons.qr_code_2_rounded, size: 40, color: Colors.blue),
                     SizedBox(width: 12),
                     Text(
-                      'Quét QR nhân sự',
+                      'Nhân sự',
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
@@ -85,7 +85,7 @@ class HomeScreen extends StatelessWidget {
                 // Move name down below the date section
                 const SizedBox(height: 62),
                 const Text(
-                  'Xin chào, Nguyễn Văn A', // Thay bằng biến tên động nếu cós
+                  'Xin chào, Lê Thị B', // Thay bằng biến tên động nếu cós
                   style: TextStyle(
                     fontSize: 28,
                     color: Colors.black87,
