@@ -4,23 +4,26 @@ const express = require("express");
 const cors = require("cors");
 const app = express();
 
-// Lấy PORT và HOST từ biến môi trường
+const db = require("./connect"); // Kết nối MySQL
+
 const port = process.env.PORT || 3000;
-const host = process.env.HOST || "127.0.0.1";
+// không cần gán host cố định, hosting sẽ xử lý
+// chỉ cần app.listen(port)
 
 app.use(cors());
 app.use(express.json());
 
-// Route
+// Routes
 app.use("/api/scan", require("./routes/scanRoutes"));
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/protected", require("./routes/protectedRoutes"));
 
-app.use((req, res, next) => {
+// 404 handler
+app.use((req, res) => {
   res.status(404).json({ error: "Not found" });
 });
 
-// Khởi động server
-app.listen(port, host, () => {
-  console.log(`🚀 Server đang chạy tại http://${host}:${port}`);
+// Start server
+app.listen(port, () => {
+  console.log(`🚀 Server đang chạy trên port ${port}`);
 });
