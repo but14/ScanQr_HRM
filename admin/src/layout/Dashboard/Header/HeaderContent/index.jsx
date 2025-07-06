@@ -34,7 +34,6 @@ export default function HeaderContent() {
         <GithubOutlined />
       </IconButton> */}
 
-      <Notification />
       {!downLG && <Profile />}
       {downLG && <MobileSection />}
     </>

@@ -106,8 +106,8 @@ export default function DashboardDefault() {
                 <TableCell>{row.id_number}</TableCell>
                 <TableCell>{row.date_of_birth ? new Date(row.date_of_birth).toLocaleDateString('vi-VN') : ''}</TableCell>
                 <TableCell>{row.place_of_residence}</TableCell>
-                <TableCell>{row.phone}</TableCell>
-                <TableCell>{row.factory || 'F17'}</TableCell>
+                <TableCell>{row.phone_number}</TableCell>
+                <TableCell>{row.factory || 'Không rõ'}</TableCell>
                 <TableCell>{row.created_at ? new Date(row.created_at).toLocaleString() : ''}</TableCell>
               </TableRow>
             ))}

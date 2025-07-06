@@ -1,9 +1,10 @@
-import 'dart:convert'; // Thêm import này để sử dụng json.encode
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http; // Thêm import http
+import 'package:http/http.dart' as http;
 import 'package:mobile/screens/home_screen.dart';
-import 'manual_add_screen.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:jwt_decode/jwt_decode.dart';
 
 class ManualAddScreen extends StatefulWidget {
   final Map<String, String> ocrData;
@@ -26,25 +27,34 @@ class _ManualAddScreenState extends State<ManualAddScreen> {
   final TextEditingController placeOfResidenceController =
       TextEditingController();
   final TextEditingController scanNotesController = TextEditingController();
-  final TextEditingController managerIdController = TextEditingController();
+  final TextEditingController phoneNumberController = TextEditingController();
 
-  String selectedGender = 'Nam'; // Default selection for gender
+  String managerIdFromToken = '';
+  String selectedGender = 'Nam';
 
   @override
   void initState() {
     super.initState();
+    _loadManagerIdFromPrefs();
 
     final ocrData = widget.ocrData;
-    nameController.text = widget.ocrData['full_name'] ?? '';
-    dobController.text = widget.ocrData['date_of_birth'] ?? '';
-    genderController.text =
-        widget.ocrData['gender'] ?? 'Nam'; // Default to 'Nam'
-    nationalityController.text = widget.ocrData['nationality'] ?? 'Việt Nam';
-    idNumberController.text = widget.ocrData['id_number'] ?? '';
-    placeOfOriginController.text = widget.ocrData['place_of_origin'] ?? '';
-    placeOfResidenceController.text =
-        widget.ocrData['place_of_residence'] ?? '';
-    managerIdController.text = '3';
+    nameController.text = ocrData['full_name'] ?? '';
+    dobController.text = ocrData['date_of_birth'] ?? '';
+    genderController.text = ocrData['gender'] ?? 'Nam';
+    nationalityController.text = ocrData['nationality'] ?? 'Việt Nam';
+    idNumberController.text = ocrData['id_number'] ?? '';
+    placeOfOriginController.text = ocrData['place_of_origin'] ?? '';
+    placeOfResidenceController.text = ocrData['place_of_residence'] ?? '';
+  }
+
+  Future<void> _loadManagerIdFromPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    final managerId = prefs.getString('managerId'); // 👈 Đọc lại từ storage
+
+    setState(() {
+      managerIdFromToken = managerId ?? '';
+      print('✅ Manager ID từ SharedPreferences: $managerIdFromToken');
+    });
   }
 
   String formatDate(String date) {
@@ -55,13 +65,12 @@ class _ManualAddScreenState extends State<ManualAddScreen> {
       return outputFormat.format(dateTime);
     } catch (e) {
       print("Lỗi khi chuyển đổi ngày: $e");
-      return date; // Trả về ngày gốc nếu có lỗi
+      return date;
     }
   }
 
   Future<void> _submitForm() async {
     if (_formKey.currentState!.validate()) {
-      // Gather the form data
       final Map<String, String> formData = {
         'full_name': nameController.text,
         'date_of_birth': formatDate(dobController.text),
@@ -71,15 +80,16 @@ class _ManualAddScreenState extends State<ManualAddScreen> {
         'date_of_issue': dateOfIssueController.text,
         'place_of_origin': placeOfOriginController.text,
         'place_of_residence': placeOfResidenceController.text,
-        'manager_id': managerIdController.text,
+        'phone_number': phoneNumberController.text,
+        'manager_id': managerIdFromToken,
         'scan_notes': scanNotesController.text,
       };
 
-      // Call the scanCCCD API
+      print('Form data: $formData');
+
       try {
         final response = await http.post(
-          Uri.parse(
-              'http://192.168.0.109:5000/api/scan/scan-cccd'), // Thay bằng URL API của bạn
+          Uri.parse('https://corehr.igroup.com.vn/api/scan/scan-cccd'),
           headers: {
             'Content-Type': 'application/json',
           },
@@ -87,7 +97,6 @@ class _ManualAddScreenState extends State<ManualAddScreen> {
         );
 
         if (response.statusCode == 200) {
-          final responseData = json.decode(response.body);
           showDialog(
             context: context,
             barrierDismissible: true,
@@ -98,12 +107,11 @@ class _ManualAddScreenState extends State<ManualAddScreen> {
                 actions: [
                   TextButton(
                     onPressed: () {
-                      Navigator.of(context).pop(); // Đóng dialog
+                      Navigator.of(context).pop();
                       Navigator.of(context).pushAndRemoveUntil(
                         MaterialPageRoute(
                             builder: (context) => const HomeScreen()),
-                        (Route<dynamic> route) =>
-                            false, // Xóa hết các màn hình trước đó
+                        (Route<dynamic> route) => false,
                       );
                     },
                     child: const Text('OK'),
@@ -146,8 +154,10 @@ class _ManualAddScreenState extends State<ManualAddScreen> {
                   placeOfOriginController, 'Nguyên quán', Icons.home),
               _buildTextField(placeOfResidenceController, 'Nơi thường trú',
                   Icons.location_city),
-              _buildTextField(
-                  managerIdController, 'Mã quản lý', Icons.supervisor_account),
+              _buildTextField(phoneNumberController,
+                  'Số điện thoại (không bắt buộc)', Icons.phone,
+                  required: false),
+              // ✅ Đã ẩn input Mã quản lý
               const SizedBox(height: 28),
               ElevatedButton.icon(
                 icon: const Icon(Icons.save),
@@ -156,7 +166,7 @@ class _ManualAddScreenState extends State<ManualAddScreen> {
                   backgroundColor: Colors.blue,
                   minimumSize: const Size.fromHeight(48),
                 ),
-                onPressed: _submitForm, // Gọi hàm _submitForm khi nhấn nút
+                onPressed: _submitForm,
               ),
             ],
           ),
@@ -166,18 +176,21 @@ class _ManualAddScreenState extends State<ManualAddScreen> {
   }
 
   Widget _buildTextField(
-      TextEditingController controller, String label, IconData icon) {
+      TextEditingController controller, String label, IconData icon,
+      {bool required = true, bool readOnly = false}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: TextFormField(
         controller: controller,
+        readOnly: readOnly,
         decoration: InputDecoration(
           labelText: label,
           prefixIcon: Icon(icon),
           border: const OutlineInputBorder(),
         ),
-        validator: (value) =>
-            value == null || value.isEmpty ? 'Nhập $label' : null,
+        validator: required
+            ? (value) => value == null || value.isEmpty ? 'Nhập $label' : null
+            : null,
       ),
     );
   }
@@ -218,10 +231,10 @@ class _ManualAddScreenState extends State<ManualAddScreen> {
       padding: const EdgeInsets.only(bottom: 16),
       child: DropdownButtonFormField<String>(
         value: selectedGender,
-        decoration: InputDecoration(
+        decoration: const InputDecoration(
           labelText: 'Giới tính',
-          prefixIcon: const Icon(Icons.wc),
-          border: const OutlineInputBorder(),
+          prefixIcon: Icon(Icons.wc),
+          border: OutlineInputBorder(),
         ),
         onChanged: (value) {
           setState(() {
@@ -250,8 +263,8 @@ class _ManualAddScreenState extends State<ManualAddScreen> {
     dateOfIssueController.dispose();
     placeOfOriginController.dispose();
     placeOfResidenceController.dispose();
+    phoneNumberController.dispose();
     scanNotesController.dispose();
-    managerIdController.dispose();
     super.dispose();
   }
 }

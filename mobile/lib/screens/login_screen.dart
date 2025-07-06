@@ -1,8 +1,78 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mobile/screens/home_screen.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+
+  bool isLoading = false;
+
+  Future<void> _login() async {
+    final email = emailController.text.trim();
+    final password = passwordController.text;
+
+    if (email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Vui lòng nhập email và mật khẩu')),
+      );
+      return;
+    }
+
+    setState(() => isLoading = true);
+
+    try {
+      final response = await http.post(
+        Uri.parse('https://corehr.igroup.com.vn/api/auth/login'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'email': email, 'password': password}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final token = data['token'];
+        final manager = data['manager'];
+
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('accessToken', token);
+        await prefs.setString('managerId', manager['id'].toString());
+        await prefs.setString('managerName', manager['name']);
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const HomeScreen()),
+        );
+      } else {
+        final error =
+            jsonDecode(response.body)['error'] ?? 'Lỗi không xác định';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Đăng nhập thất bại: $error')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Lỗi kết nối: $e')),
+      );
+    } finally {
+      setState(() => isLoading = false);
+    }
+  }
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +108,8 @@ class LoginScreen extends StatelessWidget {
                   const SizedBox(height: 60),
                   // Email
                   TextField(
-                    decoration: InputDecoration(
+                    controller: emailController,
+                    decoration: const InputDecoration(
                       prefixIcon:
                           Icon(Icons.email_outlined, color: Colors.blue),
                       labelText: 'Tài khoản truy cập',
@@ -48,8 +119,9 @@ class LoginScreen extends StatelessWidget {
                   const SizedBox(height: 24),
                   // Password
                   TextField(
+                    controller: passwordController,
                     obscureText: true,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       prefixIcon:
                           Icon(Icons.vpn_key_outlined, color: Colors.blue),
                       labelText: 'Mật khẩu',
@@ -68,37 +140,20 @@ class LoginScreen extends StatelessWidget {
                         ),
                         elevation: 2,
                       ),
-                      onPressed: () {
-                        Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const HomeScreen(),
-                            ));
-                      },
-                      child: const Text(
-                        'ĐĂNG NHẬP',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          letterSpacing: 1.2,
-                        ),
-                      ),
+                      onPressed: isLoading ? null : _login,
+                      child: isLoading
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : const Text(
+                              'ĐĂNG NHẬP',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                letterSpacing: 1.2,
+                              ),
+                            ),
                     ),
                   ),
                   const SizedBox(height: 16),
-                  // Forget Password
-                  // Align(
-                  //   alignment: Alignment.centerRight,
-                  //   child: TextButton(
-                  //     onPressed: () {
-                  //       // Xử lý quên mật khẩu
-                  //     },
-                  //     child: const Text(
-                  //       'Quên mật khẩu?',
-                  //       style: TextStyle(color: Colors.blue),
-                  //     ),
-                  //   ),
-                  // ),
                 ],
               ),
             ),

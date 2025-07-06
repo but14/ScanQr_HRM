@@ -37,7 +37,7 @@ exports.login = (req, res) => {
           id: manager.id,
           email: manager.email,
           name: manager.name,
-          role: manager.role, // 🟢 Thêm role vào đây để phân quyền
+          role: manager.role, 
         },
         JWT_SECRET,
         { expiresIn: "1d" }

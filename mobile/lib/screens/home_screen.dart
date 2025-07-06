@@ -3,9 +3,30 @@ import 'package:mobile/screens/history_screen.dart';
 import 'package:mobile/screens/manual_add_screen.dart';
 import 'package:mobile/screens/qr_scan_screen.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  String managerName = '...';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadManagerName();
+  }
+
+  Future<void> _loadManagerName() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      managerName = prefs.getString('managerName') ?? 'Người dùng';
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,12 +63,12 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
           ),
+
           // Nội dung trang chủ
           SafeArea(
             child: Column(
               children: [
                 const SizedBox(height: 32),
-                // Icon QR và tên hệ thống
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: const [
@@ -64,7 +85,6 @@ class HomeScreen extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 18),
-                // Remove this row with name for now
                 const SizedBox(height: 100),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -82,11 +102,10 @@ class HomeScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                // Move name down below the date section
                 const SizedBox(height: 62),
-                const Text(
-                  'Xin chào, Lê Thị B', // Thay bằng biến tên động nếu cós
-                  style: TextStyle(
+                Text(
+                  'Xin chào, $managerName',
+                  style: const TextStyle(
                     fontSize: 28,
                     color: Colors.black87,
                     fontWeight: FontWeight.w500,
@@ -94,11 +113,9 @@ class HomeScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 50),
 
-                // Thêm menu chức năng phụ
-                const Spacer(), // Đẩy các nút xuống giữa
+                const Spacer(),
                 Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   child: GridView.count(
                     crossAxisCount: 2,
                     mainAxisSpacing: 20,
@@ -158,10 +175,12 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ),
 
-                SizedBox(height: 80), // Đẩy các nút lên giữa
+                const SizedBox(height: 80),
               ],
             ),
           ),
+
+          // Footer
           Align(
             alignment: Alignment.bottomRight,
             child: Padding(
@@ -182,7 +201,6 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-// Custom clipper cho sóng xanh (dùng chung với splash/login)
 class WaveClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {

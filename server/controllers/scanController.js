@@ -10,8 +10,9 @@ exports.scanCCCD = (req, res) => {
     id_number,
     place_of_origin,
     place_of_residence,
-    manager_id, // Truyền từ client hoặc lấy từ token
-    scan_notes, // Tùy chọn
+    phone_number,
+    manager_id,
+    scan_notes,
   } = req.body;
 
   console.log(`[SCAN] Nhận yêu cầu quét CCCD: ${id_number}`);
@@ -63,8 +64,8 @@ exports.scanCCCD = (req, res) => {
           // Nếu chưa có, tạo mới nhân viên
           const insertQuery = `
             INSERT INTO employees
-            (full_name, date_of_birth, gender, nationality, id_number, place_of_origin, place_of_residence, manager_id)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            (full_name, date_of_birth, gender, nationality, id_number, place_of_origin, place_of_residence,phone_number, manager_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?,?)
           `;
 
           connection.query(
@@ -77,6 +78,7 @@ exports.scanCCCD = (req, res) => {
               id_number,
               place_of_origin,
               place_of_residence,
+              phone_number,
               manager_id,
             ],
             (err, result) => {
@@ -206,7 +208,10 @@ exports.getEmployeesByManager = (req, res) => {
     return res.status(400).json({ error: "Thiếu manager_id" });
   }
   connection.query(
-    "SELECT * FROM employees WHERE manager_id = ?",
+    `SELECT e.*, m.location AS factory
+   FROM employees e
+   JOIN managers m ON e.manager_id = m.id
+   WHERE e.manager_id = ?`,
     [manager_id],
     (err, results) => {
       if (err) {
